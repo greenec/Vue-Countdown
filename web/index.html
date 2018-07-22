@@ -1,0 +1,169 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Countdown</title>
+
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" />
+
+    <style>
+        body {
+            text-align: center;
+            background: #18BC9C;
+            font-family: sans-serif;
+        }
+
+        h1 {
+            color: #35495E;
+        }
+
+        #countdown {
+            color: #fff;
+            font-size: 30px;
+        }
+
+            #countdown .time-card {
+                padding: 10px;
+                border-radius: 3px;
+                background: #00A383;
+            }
+
+                #countdown .time-card > .tc-value {
+                    padding: 5px;
+                    border-radius: 3px;
+                    background: #35495E;
+                }
+
+                #countdown .time-card > .tc-description {
+                    margin-top: 10px;
+                    font-size: 15px;
+                }
+
+        /* Reduce padding for columns on mobile devices */
+        .col-3 {
+            padding-left: 2.5px;
+            padding-right: 2.5px;
+        }
+
+            .col-3:first-child {
+                padding-left: 5px;
+            }
+
+            .col-3:last-child {
+                padding-right: 5px;
+            }
+
+        /* Increase value bubble on larger screens */
+        @media (min-width: 768px) {
+            #countdown .time-card > .tc-value {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4">Countdown</h1>
+        <div id="countdown">
+            <div class="row" v-if="timeData.total > 0">
+                <div class="offset-md-2 col-md-2 col-3">
+                    <div class="time-card">
+                        <span class="tc-value">
+                            {{ timeData.days | padTimeComponent }}
+                        </span>
+                        <div class="tc-description">
+                            {{ timeData.days | pluralize('Day') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-3">
+                    <div class="time-card">
+                        <span class="tc-value">
+                            {{ timeData.hours | padTimeComponent }}
+                        </span>
+                        <div class="tc-description">
+                            {{ timeData.hours | pluralize('Hour') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-3">
+                    <div class="time-card">
+                        <span class="tc-value">
+                            {{ timeData.minutes | padTimeComponent }}
+                        </span>
+                        <div class="tc-description">
+                            {{ timeData.minutes | pluralize('Minute') }}
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-2 col-3">
+                    <div class="time-card">
+                        <span class="tc-value">
+                            {{ timeData.seconds | padTimeComponent }}
+                        </span>
+                        <div class="tc-description">
+                            {{ timeData.seconds | pluralize('Second') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div v-else>
+                <h1>Done!</h1>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+
+    <script>
+        var countdownDate = new Date("August 20, 2018 9:00 AM");
+
+        var app = new Vue({
+            el: '#countdown',
+            data: {
+                timeData: {}
+            },
+            filters: {
+                pluralize: function (count, str) {
+                    if (count == 1) {
+                        return str;
+                    }
+                    return str + "s";
+                },
+                padTimeComponent: function (num) {
+                    if (num.toString().length < 2) {
+                        num = '0' + num;
+                    }
+                    return num;
+                }
+            }
+        });
+
+        updateClock();
+        var timeinterval = setInterval(updateClock, 1000);
+
+        function updateClock() {
+            app.timeData = getTimeRemaining(countdownDate);
+
+            if (app.timeData.total < 0) {
+                clearInterval(timeinterval);
+            }
+        }
+
+        function getTimeRemaining(endtime) {
+            var now = new Date();
+            var difference = (endtime.getTime() - now.getTime()) / 1000;
+
+            return {
+                'total': difference,
+                'seconds': Math.floor(difference % 60),
+                'minutes': Math.floor((difference / 60) % 60),
+                'hours': Math.floor((difference / (60 * 60)) % 24),
+                'days': Math.floor(difference / (60 * 60 * 24))
+            };
+        }
+    </script>
+</body>
+</html>
