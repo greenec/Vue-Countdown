@@ -118,6 +118,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
 
     <script>
+        Vue.config.devtools = true;
+
         var countdownDate = new Date("August 20, 2018 9:00 AM");
 
         var app = new Vue({
@@ -154,7 +156,7 @@
 
         function getTimeRemaining(endtime) {
             var now = new Date();
-            var difference = (endtime.getTime() - now.getTime()) / 1000;
+            var difference = Math.floor((endtime.getTime() - now.getTime()) / 1000);
 
             return {
                 'total': difference,
