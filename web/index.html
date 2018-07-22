@@ -116,16 +116,23 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
     <script>
         Vue.config.devtools = true;
 
-        var countdownDate = new Date("August 20, 2018 9:00 AM");
-
         var app = new Vue({
             el: '#countdown',
             data: {
-                timeData: {}
+                timeData: {},
+                countdownDate: null
+            },
+            created: function () {
+                var self = this;
+
+                $.get('api/', function (data) {
+                    self.countdownDate = parseInt(data.timestamp);
+                }, 'json');
             },
             filters: {
                 pluralize: function (count, str) {
@@ -147,16 +154,13 @@
         var timeinterval = setInterval(updateClock, 1000);
 
         function updateClock() {
-            app.timeData = getTimeRemaining(countdownDate);
-
-            if (app.timeData.total < 0) {
-                clearInterval(timeinterval);
-            }
+            app.timeData = getTimeRemaining(app.countdownDate);
         }
 
         function getTimeRemaining(endtime) {
-            var now = new Date();
-            var difference = Math.floor((endtime.getTime() - now.getTime()) / 1000);
+            var now = Math.floor(new Date().getTime() / 1000);
+
+            var difference = endtime - now;
 
             return {
                 'total': difference,
