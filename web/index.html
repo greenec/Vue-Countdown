@@ -131,7 +131,8 @@
                 var self = this;
 
                 $.get('api/', function (data) {
-                    self.countdownDate = parseInt(data.timestamp);
+                    self.countdownDate = data.timestamp;
+                    updateClock();
                 }, 'json');
             },
             filters: {
