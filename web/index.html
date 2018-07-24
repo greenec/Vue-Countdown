@@ -9,6 +9,10 @@
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" />
 
     <style>
+        [v-cloak] {
+            display: none;
+        }
+
         body {
             text-align: center;
             background: #18BC9C;
@@ -66,8 +70,11 @@
 <body>
     <div class="container">
         <h1 class="mt-5 mb-4">Countdown</h1>
-        <div id="countdown">
-            <div class="row" v-if="timeData.total > 0">
+        <div id="countdown" v-cloak>
+            <div v-if="loading">
+                Loading...
+            </div>
+            <div class="row" v-else-if="timeData.total > 0">
                 <div class="offset-md-2 col-md-2 col-3">
                     <div class="time-card">
                         <span class="tc-value">
@@ -110,7 +117,7 @@
                 </div>
             </div>
             <div v-else>
-                <h1>Done!</h1>
+                Done!
             </div>
         </div>
     </div>
@@ -124,6 +131,7 @@
         var app = new Vue({
             el: '#countdown',
             data: {
+                loading: true,
                 timeData: {},
                 countdownDate: null
             },
@@ -131,8 +139,10 @@
                 var self = this;
 
                 $.get('api/', function (data) {
-                    self.countdownDate = data.timestamp;
+                    self.countdownDate = data[0].timestamp;
                     updateClock();
+
+                    self.loading = false;
                 }, 'json');
             },
             filters: {

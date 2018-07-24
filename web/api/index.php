@@ -14,7 +14,7 @@ if($conn->connect_error)
 
 $events = getEvents($conn);
 
-echo json_encode( $events[0] );
+echo json_encode( $events );
 
 function getEvents($conn)
 {
