@@ -139,7 +139,6 @@
                 var self = this;
 
                 var requestData = { action: "list" };
-
                 $.post('api/', requestData, function (data) {
                     self.countdownDate = data[0].timestamp;
 
@@ -172,7 +171,6 @@
 
         function getTimeRemaining(endtime) {
             var now = Math.floor(new Date().getTime() / 1000);
-
             var difference = endtime - now;
 
             return {
