@@ -12,9 +12,16 @@ if($conn->connect_error)
 	die("Database connection failed: " . $conn->connect_error);
 }
 
-$events = getEvents($conn);
+if($_POST['action'] == 'list')
+{
+	$response = getEvents($conn);
+}
+else
+{
+	$response = ['error' => 'Invalid request format'];
+}
 
-echo json_encode( $events );
+echo json_encode( $response );
 
 function getEvents($conn)
 {

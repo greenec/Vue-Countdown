@@ -138,7 +138,9 @@
             created: function () {
                 var self = this;
 
-                $.get('api/', function (data) {
+                var requestData = { action: "list" };
+
+                $.post('api/', requestData, function (data) {
                     self.countdownDate = data[0].timestamp;
 
                     self.updateClock();
