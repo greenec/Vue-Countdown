@@ -9,6 +9,10 @@
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" />
 
     <style>
+        [v-cloak] {
+            display: none;
+        }
+
         body {
             text-align: center;
             background: #18BC9C;
@@ -66,8 +70,11 @@
 <body>
     <div class="container">
         <h1 class="mt-5 mb-4">Countdown</h1>
-        <div id="countdown">
-            <div class="row" v-if="timeData.total > 0">
+        <div id="countdown" v-cloak>
+            <div v-if="loading">
+                Loading...
+            </div>
+            <div class="row" v-else-if="timeData.total > 0">
                 <div class="offset-md-2 col-md-2 col-3">
                     <div class="time-card">
                         <span class="tc-value">
@@ -110,22 +117,36 @@
                 </div>
             </div>
             <div v-else>
-                <h1>Done!</h1>
+                Done!
             </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 
     <script>
         Vue.config.devtools = true;
 
-        var countdownDate = new Date("August 20, 2018 9:00 AM");
-
         var app = new Vue({
             el: '#countdown',
             data: {
-                timeData: {}
+                loading: true,
+                timeData: {},
+                countdownDate: null
+            },
+            created: function () {
+                var self = this;
+
+                var requestData = { action: "list" };
+                $.post('api/', requestData, function (data) {
+                    self.countdownDate = data[0].timestamp;
+
+                    self.updateClock();
+                    setInterval(self.updateClock, 1000);
+
+                    self.loading = false;
+                }, 'json');
             },
             filters: {
                 pluralize: function (count, str) {
@@ -140,23 +161,17 @@
                     }
                     return num;
                 }
+            },
+            methods: {
+                updateClock: function () {
+                    this.timeData = getTimeRemaining(this.countdownDate);
+                }
             }
         });
 
-        updateClock();
-        var timeinterval = setInterval(updateClock, 1000);
-
-        function updateClock() {
-            app.timeData = getTimeRemaining(countdownDate);
-
-            if (app.timeData.total < 0) {
-                clearInterval(timeinterval);
-            }
-        }
-
         function getTimeRemaining(endtime) {
-            var now = new Date();
-            var difference = Math.floor((endtime.getTime() - now.getTime()) / 1000);
+            var now = Math.floor(new Date().getTime() / 1000);
+            var difference = endtime - now;
 
             return {
                 'total': difference,
