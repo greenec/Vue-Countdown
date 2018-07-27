@@ -27,14 +27,16 @@ function getEvents($conn)
 {
 	$events = [];
 
-	$result = $conn->query('SELECT eventId, eventName, UNIX_TIMESTAMP(eventTime) AS eventTime FROM events');
+	$stmt = $conn->prepare('SELECT eventId, eventName, UNIX_TIMESTAMP(eventTime) FROM events');
+	$stmt->execute();
+	$stmt->bind_result($eventId, $eventName, $eventTime);
 
-	while($row = $result->fetch_assoc())
+	while($stmt->fetch())
 	{
 		$events[] = [
-			'id' => $row['eventId'],
-			'name' => $row['eventName'],
-			'timestamp' => $row['eventTime']
+			'id' => $eventId,
+			'name' => $eventName,
+			'timestamp' => $eventTime
 		];
 	}
 
