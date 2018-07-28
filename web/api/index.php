@@ -12,9 +12,20 @@ if($conn->connect_error)
 	die("Database connection failed: " . $conn->connect_error);
 }
 
-if($_POST['action'] == 'list')
+$action = isset($_POST['action']) ? $_POST['action'] : '';
+
+if($action == 'list')
 {
 	$response = getEvents($conn);
+}
+else if($action == 'add')
+{
+	$eventName = isset($_POST['eventName']) ? $_POST['eventName'] : '';
+	$eventTime = isset($_POST['eventTime']) ? $_POST['eventTime'] : '';
+
+	$eventTime = formatTimeSQL($eventTime);
+
+	$response = addEvent($conn, $eventName, $eventTime);
 }
 else
 {
@@ -23,7 +34,7 @@ else
 
 echo json_encode( $response );
 
-function getEvents($conn)
+function getEvents(mysqli $conn)
 {
 	$events = [];
 
@@ -41,4 +52,23 @@ function getEvents($conn)
 	}
 
 	return $events;
+}
+
+function addEvent(mysqli $conn, $eventName, $eventTime)
+{
+	$stmt = $conn->prepare("INSERT INTO events (eventName, eventTime) VALUES(?, ?)");
+	$stmt->bind_param("ss", $eventName, $eventTime);
+	$stmt->execute();
+	
+	$event = [
+		'eventName' => $eventName,
+		'eventTime' => strtotime($eventTime),
+		'eventId' => $stmt->insert_id
+	];
+	
+	return $event;
+}
+
+function formatTimeSQL($str) {
+        return date("Y-m-d H:i:s", strtotime($str));
 }
