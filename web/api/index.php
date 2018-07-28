@@ -27,6 +27,12 @@ else if($action == 'add')
 
 	$response = addEvent($conn, $eventName, $eventTime);
 }
+else if($action == 'remove')
+{
+	$eventId = isset($_POST['eventId']) ? $_POST['eventId'] : '';
+	
+	$response = removeEvent($conn, $eventId);
+}
 else
 {
 	$response = ['error' => 'Invalid request format'];
@@ -67,6 +73,17 @@ function addEvent(mysqli $conn, $eventName, $eventTime)
 	];
 	
 	return $event;
+}
+
+function removeEvent(mysqli $conn, $eventId)
+{
+	$stmt = $conn->prepare("DELETE FROM events WHERE eventId = ?");
+	$stmt->bind_param("i", $eventId);
+	$stmt->execute();
+
+	return [
+		'eventId' => $eventId
+	];
 }
 
 function formatTimeSQL($str) {
