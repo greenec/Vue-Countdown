@@ -84,7 +84,7 @@ function removeEvent(mysqli $conn, $eventId)
 	$stmt->execute();
 
 	return [
-		'eventId' => $eventId
+		'id' => $eventId
 	];
 }
 

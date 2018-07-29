@@ -7,6 +7,7 @@
     <title>Countdown</title>
 
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
 
     <style>
         [v-cloak] {
@@ -147,6 +148,9 @@
                         <ul class="list-group">
                             <li v-for="event in events" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
                                 {{ event.name }} - {{ event.date }}
+                                <button class="btn btn-danger btn-sm float-right" @click="removeEvent(event)">
+                                    <span class="fa fa-times-circle"></span>
+                                </button>
                             </li>
                         </ul>
                     </div>
@@ -243,7 +247,7 @@
                     var requestData = {
                         action: "add",
                         eventName: this.eventName,
-                        eventTime : this.eventTime
+                        eventTime: this.eventTime
                     };
                     $.post('api/', requestData, function (data) {
                         self.eventName = null;
@@ -257,6 +261,21 @@
                     }, 'json');
 
                     e.preventDefault();
+                },
+                removeEvent: function (event) {
+                    var self = this;
+
+                    var requestData = {
+                        action: "remove",
+                        eventId: event.id
+                    };
+                    $.post('api/', requestData, function (data) {
+                        for (var i = 0; i < self.events.length; i++) {
+                            if (self.events[i].id == data.id) {
+                                self.events.splice(i, 1);
+                            }
+                        }
+                    }, 'json');
                 }
             }
         });
