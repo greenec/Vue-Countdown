@@ -90,5 +90,5 @@ function removeEvent(mysqli $conn, $eventId)
 
 function formatTimeDisplay($time)
 {
-	 return date('F jS, Y g:i A', $time);
+	 return date('n/j/Y g:i A', $time);
 }

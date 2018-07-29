@@ -24,6 +24,13 @@
             color: #35495E;
         }
 
+        .no-select {
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
         #countdown .status {
             color: #fff;
             font-size: 30px;
@@ -150,10 +157,10 @@
                     <div class="text-left collapse" id="eventList">
                         <ul class="list-group">
                             <li v-for="event in sortedEvents" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
-                                {{ event.name }} - {{ event.date }}
-                                <button class="btn btn-danger btn-sm float-right" @click="removeEvent(event)">
+                                <button class="btn btn-danger float-right" @click="removeEvent(event)">
                                     <span class="fa fa-times-circle"></span>
                                 </button>
+                                <span class="no-select">{{ event.name }} - {{ event.date }}</span>
                             </li>
                         </ul>
                     </div>
@@ -206,7 +213,10 @@
                 timeData: {},
                 activeEvent: {},
                 events: [],
-                addEventForm: {}
+                addEventForm: {
+                    name: "",
+                    time: ""
+                }
             },
             computed: {
                 sortedEvents: function () {
@@ -222,7 +232,7 @@
                 $.post('api/', requestData, function (data) {
                     self.events = data;
                     self.resetActiveEvent();
-                    
+
                     setInterval(self.updateClock, 1000);
 
                     self.loading = false;
@@ -262,7 +272,10 @@
                         eventTime: this.addEventForm.time
                     };
                     $.post('api/', requestData, function (data) {
-                        self.addEventForm = {};
+                        self.addEventForm = {
+                            name: "",
+                            time: ""
+                        };
 
                         self.events.push(data);
                         self.setActiveEvent(data);
