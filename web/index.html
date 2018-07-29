@@ -140,6 +140,7 @@
             <div class="row">
                 <div class="offset-md-2 col-md-8">
                     <div class="text-right my-4">
+                        <a class="btn btn-primary" data-toggle="modal" href="#addEventModal">Add</a>
                         <a class="btn btn-primary" data-toggle="collapse" href="#eventList">Show all</a>
                     </div>
                     <div class="text-left collapse" id="eventList">
@@ -148,6 +149,36 @@
                                 {{ event.name }} - {{ event.date }}
                             </li>
                         </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Event Modal -->
+            <div class="modal fade" id="addEventModal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add Event</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form @submit="addEvent" id="addEventForm" class="text-left">
+                                <div class="form-group">
+                                    <label for="eventNameInput">Event name</label>
+                                    <input type="text" class="form-control" id="eventNameInput" placeholder="Event name" v-model="eventName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="eventTimeInput">Event Time</label>
+                                    <input type="datetime-local" class="form-control" id="eventTimeInput" placeholder="Event time" v-model="eventTime">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" form="addEventForm" class="btn btn-primary">Submit</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -167,7 +198,9 @@
                 loading: true,
                 timeData: {},
                 activeEvent: {},
-                events: []
+                events: [],
+                eventName: null,
+                eventTime: null
             },
             created: function () {
                 var self = this;
@@ -203,6 +236,27 @@
                 },
                 setActiveEvent: function (event) {
                     this.activeEvent = event;
+                },
+                addEvent: function (e) {
+                    var self = this;
+
+                    var requestData = {
+                        action: "add",
+                        eventName: this.eventName,
+                        eventTime : this.eventTime
+                    };
+                    $.post('api/', requestData, function (data) {
+                        self.eventName = null;
+                        self.eventTime = null;
+
+                        self.events.push(data);
+                        self.activeEvent = data;
+
+                        $('#addEventModal').modal('hide');
+                        $('#eventList').slideDown();
+                    }, 'json');
+
+                    e.preventDefault();
                 }
             }
         });
