@@ -145,7 +145,7 @@
                     <div class="text-left collapse" id="eventList">
                         <ul class="list-group">
                             <li v-for="event in events" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
-                                {{ event.name }}
+                                {{ event.name }} - {{ event.date }}
                             </li>
                         </ul>
                     </div>

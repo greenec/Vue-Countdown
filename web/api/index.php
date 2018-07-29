@@ -23,7 +23,7 @@ else if($action == 'add')
 	$eventName = isset($_POST['eventName']) ? $_POST['eventName'] : '';
 	$eventTime = isset($_POST['eventTime']) ? $_POST['eventTime'] : '';
 
-	$eventTime = formatTimeSQL($eventTime);
+	$eventTime = strtotime($eventTime);
 
 	$response = addEvent($conn, $eventName, $eventTime);
 }
@@ -53,7 +53,8 @@ function getEvents(mysqli $conn)
 		$events[] = [
 			'id' => $eventId,
 			'name' => $eventName,
-			'timestamp' => $eventTime
+			'timestamp' => $eventTime,
+			'date' => formatTimeDisplay($eventTime)
 		];
 	}
 
@@ -62,14 +63,15 @@ function getEvents(mysqli $conn)
 
 function addEvent(mysqli $conn, $eventName, $eventTime)
 {
-	$stmt = $conn->prepare("INSERT INTO events (eventName, eventTime) VALUES(?, ?)");
-	$stmt->bind_param("ss", $eventName, $eventTime);
+	$stmt = $conn->prepare("INSERT INTO events (eventName, eventTime) VALUES(?, FROM_UNIXTIME(?))");
+	$stmt->bind_param("si", $eventName, $eventTime);
 	$stmt->execute();
 	
 	$event = [
-		'eventName' => $eventName,
-		'eventTime' => strtotime($eventTime),
-		'eventId' => $stmt->insert_id
+		'id' => $stmt->insert_id,
+		'name' => $eventName,
+		'timestamp' => $eventTime,
+		'date' => formatTimeDisplay($eventTime)
 	];
 	
 	return $event;
@@ -86,6 +88,7 @@ function removeEvent(mysqli $conn, $eventId)
 	];
 }
 
-function formatTimeSQL($str) {
-        return date("Y-m-d H:i:s", strtotime($str));
+function formatTimeDisplay($time)
+{
+	 return date('F jS, Y g:i A', $time);
 }
