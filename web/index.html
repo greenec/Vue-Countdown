@@ -24,6 +24,11 @@
             color: #35495E;
         }
 
+        #countdown .status {
+            color: #fff;
+            font-size: 30px;
+        }
+
         #countdown .time-card {
             color: #fff;
             background: #00A383;
@@ -84,12 +89,10 @@
 </head>
 <body>
     <div class="container">
-        <h1 class="mt-5 mb-4">Countdown</h1>
-
-        <!-- Active countdown display -->
         <div id="countdown" v-cloak>
+            <h1 class="mt-5 mb-4">{{ activeEvent.name }}</h1>
             <div v-if="loading">
-                Loading...
+                <span class="status">Loading...</span>
             </div>
             <div class="row" v-else-if="timeData.total > 0">
                 <div class="offset-md-2 col-md-2 col-3">
@@ -134,11 +137,11 @@
                 </div>
             </div>
             <div v-else>
-                Done!
+                <span class="status">Done!</span>
             </div>
 
             <!-- Event Navigation -->
-            <div class="row">
+            <div class="row" v-if="!loading">
                 <div class="offset-md-2 col-md-8">
                     <div class="text-right my-4">
                         <a class="btn btn-primary" data-toggle="modal" href="#addEventModal">Add</a>
@@ -146,7 +149,7 @@
                     </div>
                     <div class="text-left collapse" id="eventList">
                         <ul class="list-group">
-                            <li v-for="event in events" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
+                            <li v-for="event in sortedEvents" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
                                 {{ event.name }} - {{ event.date }}
                                 <button class="btn btn-danger btn-sm float-right" @click="removeEvent(event)">
                                     <span class="fa fa-times-circle"></span>
@@ -171,11 +174,11 @@
                             <form @submit="addEvent" id="addEventForm" class="text-left">
                                 <div class="form-group">
                                     <label for="eventNameInput">Event name</label>
-                                    <input type="text" class="form-control" id="eventNameInput" placeholder="Event name" v-model="eventName">
+                                    <input type="text" class="form-control" id="eventNameInput" placeholder="Event name" v-model="addEventForm.name">
                                 </div>
                                 <div class="form-group">
                                     <label for="eventTimeInput">Event Time</label>
-                                    <input type="datetime-local" class="form-control" id="eventTimeInput" placeholder="Event time" v-model="eventTime">
+                                    <input type="datetime-local" class="form-control" id="eventTimeInput" placeholder="Event time" v-model="addEventForm.time">
                                 </div>
                             </form>
                         </div>
@@ -203,8 +206,14 @@
                 timeData: {},
                 activeEvent: {},
                 events: [],
-                eventName: null,
-                eventTime: null
+                addEventForm: {}
+            },
+            computed: {
+                sortedEvents: function () {
+                    return this.events.sort(function (a, b) {
+                        return a.timestamp - b.timestamp;
+                    });
+                }
             },
             created: function () {
                 var self = this;
@@ -212,9 +221,8 @@
                 var requestData = { action: "list" };
                 $.post('api/', requestData, function (data) {
                     self.events = data;
-                    self.activeEvent = data[0];
-
-                    self.updateClock();
+                    self.resetActiveEvent();
+                    
                     setInterval(self.updateClock, 1000);
 
                     self.loading = false;
@@ -242,24 +250,25 @@
                     this.activeEvent = event;
                     this.updateClock();
                 },
+                resetActiveEvent: function () {
+                    this.setActiveEvent(this.sortedEvents[0]);
+                },
                 addEvent: function (e) {
                     var self = this;
 
                     var requestData = {
                         action: "add",
-                        eventName: this.eventName,
-                        eventTime: this.eventTime
+                        eventName: this.addEventForm.name,
+                        eventTime: this.addEventForm.time
                     };
                     $.post('api/', requestData, function (data) {
-                        self.eventName = null;
-                        self.eventTime = null;
+                        self.addEventForm = {};
 
                         self.events.push(data);
-                        self.activeEvent = data;
-                        self.updateClock();
+                        self.setActiveEvent(data);
 
                         $('#addEventModal').modal('hide');
-                        $('#eventList').collsapse('show');
+                        $('#eventList').collapse('show');
                     }, 'json');
 
                     e.preventDefault();
@@ -272,11 +281,11 @@
                         eventId: event.id
                     };
                     $.post('api/', requestData, function (data) {
-                        for (var i = 0; i < self.events.length; i++) {
-                            if (self.events[i].id == data.id) {
-                                self.events.splice(i, 1);
-                            }
-                        }
+                        self.events = self.events.filter(function (event) {
+                            return event.id != data.id
+                        });
+
+                        self.resetActiveEvent();
                     }, 'json');
                 }
             }
