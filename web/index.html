@@ -7,6 +7,7 @@
     <title>Countdown</title>
 
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
 
     <style>
         [v-cloak] {
@@ -23,27 +24,41 @@
             color: #35495E;
         }
 
-        #countdown {
+        #countdown .time-card {
             color: #fff;
+            background: #00A383;
+            border-radius: 3px;
             font-size: 30px;
+            padding: 10px;
         }
 
-            #countdown .time-card {
-                padding: 10px;
+            #countdown .time-card > .tc-value {
+                padding: 5px;
                 border-radius: 3px;
-                background: #00A383;
+                background: #35495E;
             }
 
-                #countdown .time-card > .tc-value {
-                    padding: 5px;
-                    border-radius: 3px;
-                    background: #35495E;
-                }
+            #countdown .time-card > .tc-description {
+                margin-top: 10px;
+                font-size: 15px;
+            }
 
-                #countdown .time-card > .tc-description {
-                    margin-top: 10px;
-                    font-size: 15px;
-                }
+        /* Override default bootstrap colors */
+        .btn-primary {
+            background-color: #35495E;
+            border-color: #35495E;
+        }
+
+            .btn-primary:hover,
+            .btn-primary:not(:disabled):not(.disabled):active {
+                background-color: #1C3045;
+                border-color: #1C3045;
+            }
+
+        .list-group-item.active {
+            background-color: #35495E;
+            border-color: #35495E;
+        }
 
         /* Reduce padding for columns on mobile devices */
         .col-3 {
@@ -70,6 +85,8 @@
 <body>
     <div class="container">
         <h1 class="mt-5 mb-4">Countdown</h1>
+
+        <!-- Active countdown display -->
         <div id="countdown" v-cloak>
             <div v-if="loading">
                 Loading...
@@ -119,11 +136,62 @@
             <div v-else>
                 Done!
             </div>
+
+            <!-- Event Navigation -->
+            <div class="row">
+                <div class="offset-md-2 col-md-8">
+                    <div class="text-right my-4">
+                        <a class="btn btn-primary" data-toggle="modal" href="#addEventModal">Add</a>
+                        <a class="btn btn-primary" data-toggle="collapse" href="#eventList">Show all</a>
+                    </div>
+                    <div class="text-left collapse" id="eventList">
+                        <ul class="list-group">
+                            <li v-for="event in events" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
+                                {{ event.name }} - {{ event.date }}
+                                <button class="btn btn-danger btn-sm float-right" @click="removeEvent(event)">
+                                    <span class="fa fa-times-circle"></span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Event Modal -->
+            <div class="modal fade" id="addEventModal">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Add Event</h5>
+                            <button type="button" class="close" data-dismiss="modal">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <form @submit="addEvent" id="addEventForm" class="text-left">
+                                <div class="form-group">
+                                    <label for="eventNameInput">Event name</label>
+                                    <input type="text" class="form-control" id="eventNameInput" placeholder="Event name" v-model="eventName">
+                                </div>
+                                <div class="form-group">
+                                    <label for="eventTimeInput">Event Time</label>
+                                    <input type="datetime-local" class="form-control" id="eventTimeInput" placeholder="Event time" v-model="eventTime">
+                                </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" form="addEventForm" class="btn btn-primary">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js"></script>
 
     <script>
         Vue.config.devtools = true;
@@ -133,14 +201,18 @@
             data: {
                 loading: true,
                 timeData: {},
-                countdownDate: null
+                activeEvent: {},
+                events: [],
+                eventName: null,
+                eventTime: null
             },
             created: function () {
                 var self = this;
 
                 var requestData = { action: "list" };
                 $.post('api/', requestData, function (data) {
-                    self.countdownDate = data[0].timestamp;
+                    self.events = data;
+                    self.activeEvent = data[0];
 
                     self.updateClock();
                     setInterval(self.updateClock, 1000);
@@ -164,7 +236,46 @@
             },
             methods: {
                 updateClock: function () {
-                    this.timeData = getTimeRemaining(this.countdownDate);
+                    this.timeData = getTimeRemaining(this.activeEvent.timestamp);
+                },
+                setActiveEvent: function (event) {
+                    this.activeEvent = event;
+                },
+                addEvent: function (e) {
+                    var self = this;
+
+                    var requestData = {
+                        action: "add",
+                        eventName: this.eventName,
+                        eventTime: this.eventTime
+                    };
+                    $.post('api/', requestData, function (data) {
+                        self.eventName = null;
+                        self.eventTime = null;
+
+                        self.events.push(data);
+                        self.activeEvent = data;
+
+                        $('#addEventModal').modal('hide');
+                        $('#eventList').slideDown();
+                    }, 'json');
+
+                    e.preventDefault();
+                },
+                removeEvent: function (event) {
+                    var self = this;
+
+                    var requestData = {
+                        action: "remove",
+                        eventId: event.id
+                    };
+                    $.post('api/', requestData, function (data) {
+                        for (var i = 0; i < self.events.length; i++) {
+                            if (self.events[i].id == data.id) {
+                                self.events.splice(i, 1);
+                            }
+                        }
+                    }, 'json');
                 }
             }
         });

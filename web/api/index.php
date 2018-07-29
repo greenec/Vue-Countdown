@@ -12,9 +12,26 @@ if($conn->connect_error)
 	die("Database connection failed: " . $conn->connect_error);
 }
 
-if($_POST['action'] == 'list')
+$action = isset($_POST['action']) ? $_POST['action'] : '';
+
+if($action == 'list')
 {
 	$response = getEvents($conn);
+}
+else if($action == 'add')
+{
+	$eventName = isset($_POST['eventName']) ? $_POST['eventName'] : '';
+	$eventTime = isset($_POST['eventTime']) ? $_POST['eventTime'] : '';
+
+	$eventTime = strtotime($eventTime);
+
+	$response = addEvent($conn, $eventName, $eventTime);
+}
+else if($action == 'remove')
+{
+	$eventId = isset($_POST['eventId']) ? $_POST['eventId'] : '';
+	
+	$response = removeEvent($conn, $eventId);
 }
 else
 {
@@ -23,7 +40,7 @@ else
 
 echo json_encode( $response );
 
-function getEvents($conn)
+function getEvents(mysqli $conn)
 {
 	$events = [];
 
@@ -36,9 +53,42 @@ function getEvents($conn)
 		$events[] = [
 			'id' => $eventId,
 			'name' => $eventName,
-			'timestamp' => $eventTime
+			'timestamp' => $eventTime,
+			'date' => formatTimeDisplay($eventTime)
 		];
 	}
 
 	return $events;
+}
+
+function addEvent(mysqli $conn, $eventName, $eventTime)
+{
+	$stmt = $conn->prepare("INSERT INTO events (eventName, eventTime) VALUES(?, FROM_UNIXTIME(?))");
+	$stmt->bind_param("si", $eventName, $eventTime);
+	$stmt->execute();
+	
+	$event = [
+		'id' => $stmt->insert_id,
+		'name' => $eventName,
+		'timestamp' => $eventTime,
+		'date' => formatTimeDisplay($eventTime)
+	];
+	
+	return $event;
+}
+
+function removeEvent(mysqli $conn, $eventId)
+{
+	$stmt = $conn->prepare("DELETE FROM events WHERE eventId = ?");
+	$stmt->bind_param("i", $eventId);
+	$stmt->execute();
+
+	return [
+		'id' => $eventId
+	];
+}
+
+function formatTimeDisplay($time)
+{
+	 return date('F jS, Y g:i A', $time);
 }
