@@ -240,6 +240,7 @@
                 },
                 setActiveEvent: function (event) {
                     this.activeEvent = event;
+                    this.updateClock();
                 },
                 addEvent: function (e) {
                     var self = this;
@@ -255,6 +256,7 @@
 
                         self.events.push(data);
                         self.activeEvent = data;
+                        self.updateClock();
 
                         $('#addEventModal').modal('hide');
                         $('#eventList').slideDown();
