@@ -20,7 +20,7 @@
             font-family: sans-serif;
         }
 
-        h1 {
+        h2 {
             color: #35495E;
         }
 
@@ -97,7 +97,7 @@
 <body>
     <div class="container">
         <div id="countdown" v-cloak>
-            <h1 class="mt-5 mb-4">{{ activeEvent.name }}</h1>
+            <h2 class="my-4">{{ activeEvent.name }}</h2>
             <div v-if="loading">
                 <span class="status">Loading...</span>
             </div>
@@ -160,7 +160,11 @@
                                 <button class="btn btn-danger float-right" @click="removeEvent(event)">
                                     <span class="fa fa-times-circle"></span>
                                 </button>
-                                <span class="no-select">{{ event.name }} - {{ event.date }}</span>
+                                <div class="no-select">
+                                    <span>{{ event.name }}</span>
+                                    <br />
+                                    <small>{{ event.date }}</small>
+                                </div>
                             </li>
                         </ul>
                     </div>
@@ -211,12 +215,9 @@
             data: {
                 loading: true,
                 timeData: {},
-                activeEvent: {},
                 events: [],
-                addEventForm: {
-                    name: "",
-                    time: ""
-                }
+                activeEvent: {},
+                addEventForm: {}
             },
             computed: {
                 sortedEvents: function () {
@@ -227,6 +228,8 @@
             },
             created: function () {
                 var self = this;
+
+                this.resetAddEventForm();
 
                 var requestData = { action: "list" };
                 $.post('api/', requestData, function (data) {
@@ -263,6 +266,12 @@
                 resetActiveEvent: function () {
                     this.setActiveEvent(this.sortedEvents[0]);
                 },
+                resetAddEventForm: function () {
+                    this.addEventForm = {
+                        name: "",
+                        time: ""
+                    };
+                },
                 addEvent: function (e) {
                     var self = this;
 
@@ -272,10 +281,7 @@
                         eventTime: this.addEventForm.time
                     };
                     $.post('api/', requestData, function (data) {
-                        self.addEventForm = {
-                            name: "",
-                            time: ""
-                        };
+                        self.resetAddEventForm();
 
                         self.events.push(data);
                         self.setActiveEvent(data);
