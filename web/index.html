@@ -157,13 +157,33 @@
                     <div class="text-left collapse" id="eventList">
                         <ul class="list-group">
                             <li v-for="event in sortedEvents" @click="setActiveEvent(event)" class="list-group-item" v-bind:class="{ active: event == activeEvent }">
-                                <button class="btn btn-danger float-right" @click="removeEvent(event)">
-                                    <span class="fa fa-times-circle"></span>
-                                </button>
-                                <div class="no-select">
-                                    <span>{{ event.name }}</span>
-                                    <br />
-                                    <small>{{ event.date }}</small>
+                                <div v-if="!event.editing">
+                                    <div class="float-right">
+                                        <button class="btn btn-info" @click="editEvent(event)">
+                                            <span class="fa fa-fw fa-pencil"></span>
+                                        </button>
+                                        <button class="btn btn-danger" @click="removeEvent(event)">
+                                            <span class="fa fa-fw fa-times-circle"></span>
+                                        </button>
+                                    </div>
+                                    <div class="no-select">
+                                        <span>{{ event.name }}</span>
+                                        <br />
+                                        <small>{{ event.date }}</small>
+                                    </div>
+                                </div>
+                                <div v-else>
+                                    <div class="form-group">
+                                        <label>Event name</label>
+                                        <input type="text" class="form-control" v-model="event.name" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Event date</label>
+                                        <input type="text" class="form-control" v-model="event.date" />
+                                    </div>
+                                    <button class="btn btn-info float-right" @click="saveEvent(event)">
+                                        Save
+                                    </button>
                                 </div>
                             </li>
                         </ul>
@@ -291,6 +311,12 @@
                     }, 'json');
 
                     e.preventDefault();
+                },
+                editEvent: function(event) {
+                    event.editing = true;
+                },
+                saveEvent: function(event) {
+                    event.editing = false;
                 },
                 removeEvent: function (event) {
                     var self = this;
