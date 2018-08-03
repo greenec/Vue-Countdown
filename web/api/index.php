@@ -27,6 +27,16 @@ else if($action == 'add')
 
 	$response = addEvent($conn, $eventName, $eventTime);
 }
+else if($action == 'update')
+{
+	$eventId = isset($_POST['eventId']) ? $_POST['eventId'] : 0;
+	$eventName = isset($_POST['eventName']) ? $_POST['eventName'] : '';
+	$eventTime = isset($_POST['eventTime']) ? $_POST['eventTime'] : '';
+
+	$eventTime = strtotime($eventTime);
+
+	$response = updateEvent($conn, $eventId, $eventName, $eventTime);
+}
 else if($action == 'remove')
 {
 	$eventId = isset($_POST['eventId']) ? $_POST['eventId'] : '';
@@ -73,7 +83,26 @@ function addEvent(mysqli $conn, $eventName, $eventTime)
 		'timestamp' => $eventTime,
 		'date' => formatTimeDisplay($eventTime)
 	];
+
+	$stmt->close();
 	
+	return $event;
+}
+
+function updateEvent(mysqli $conn, $eventId, $eventName, $eventTime)
+{
+	$stmt = $conn->prepare("UPDATE events SET eventName = ?, eventTime = FROM_UNIXTIME(?) WHERE eventId = ?");
+	$stmt->bind_param("sii", $eventName, $eventTime, $eventId);
+	$stmt->execute();
+	$stmt->close();
+
+	$event = [
+		'id' => $eventId,
+		'name' =>  $eventName,
+		'timestamp' => $eventTime,
+		'date' => formatTimeDisplay($eventTime)
+	];
+
 	return $event;
 }
 
@@ -82,6 +111,7 @@ function removeEvent(mysqli $conn, $eventId)
 	$stmt = $conn->prepare("DELETE FROM events WHERE eventId = ?");
 	$stmt->bind_param("i", $eventId);
 	$stmt->execute();
+	$stmt->close();
 
 	return [
 		'id' => $eventId

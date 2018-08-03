@@ -181,7 +181,7 @@
                                         <label>Event date</label>
                                         <input type="text" class="form-control" v-model="event.date" />
                                     </div>
-                                    <button class="btn btn-info float-right" @click="saveEvent(event)">
+                                    <button class="btn btn-info float-right" @click="updateEvent(event)">
                                         Save
                                     </button>
                                 </div>
@@ -315,7 +315,22 @@
                 editEvent: function(event) {
                     event.editing = true;
                 },
-                saveEvent: function(event) {
+                updateEvent: function(event) {
+                    var self = this;
+
+                    var requestData = {
+                        action: "update",
+                        eventId: event.id,
+                        eventName: event.name,
+                        eventTime: event.date
+                    };
+                    $.post("api/", requestData, function(data) {
+                        event.date = data.date,
+                        event.timestamp = data.timestamp
+
+                        self.updateClock();
+                    }, 'json');
+
                     event.editing = false;
                 },
                 removeEvent: function (event) {
