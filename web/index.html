@@ -97,7 +97,7 @@
 <body>
     <div class="container">
         <div id="countdown" v-cloak>
-            <h2 class="my-4">{{ activeEvent.name }}</h2>
+            <h2 class="my-4" v-if="activeEvent != null">{{ activeEvent.name }}</h2>
             <div v-if="loading">
                 <span class="status">Loading...</span>
             </div>
@@ -277,7 +277,9 @@
             },
             methods: {
                 updateClock: function () {
-                    this.timeData = getTimeRemaining(this.activeEvent.timestamp);
+                    if (this.activeEvent != null) {
+                        this.timeData = getTimeRemaining(this.activeEvent.timestamp);
+                    }
                 },
                 setActiveEvent: function (event) {
                     this.activeEvent = event;
