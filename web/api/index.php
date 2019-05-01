@@ -1,9 +1,9 @@
 <?php
 
 $db_host = 'localhost';
-$db_username = 'countdown';
-$db_password = 'LynzeeRose';
-$db_name = 'countdown';
+$db_username = '';
+$db_password = '';
+$db_name = '';
 
 $conn = new mysqli($db_host, $db_username, $db_password, $db_name);
 
