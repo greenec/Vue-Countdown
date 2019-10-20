@@ -234,7 +234,7 @@
             el: '#countdown',
             data: {
                 loading: true,
-                timeData: {},
+                currentTimestamp: Math.floor(new Date().getTime() / 1000),
                 events: [],
                 activeEvent: {},
                 addEventForm: {}
@@ -244,10 +244,23 @@
                     return this.events.sort(function (a, b) {
                         return a.timestamp - b.timestamp;
                     });
+                },
+                timeData: function () {
+                    var difference = this.activeEvent.timestamp - this.currentTimestamp;
+
+                    return {
+                        'total': difference,
+                        'seconds': Math.floor(difference % 60),
+                        'minutes': Math.floor((difference / 60) % 60),
+                        'hours': Math.floor((difference / (60 * 60)) % 24),
+                        'days': Math.floor(difference / (60 * 60 * 24))
+                    };
                 }
             },
             created: function () {
                 var self = this;
+
+                setInterval(this.setCurrentTimestamp, 1000);
 
                 this.resetAddEventForm();
 
@@ -255,8 +268,6 @@
                 $.post('api/', requestData, function (data) {
                     self.events = data;
                     self.resetActiveEvent();
-
-                    setInterval(self.updateClock, 1000);
 
                     self.loading = false;
                 }, 'json');
@@ -276,14 +287,11 @@
                 }
             },
             methods: {
-                updateClock: function () {
-                    if (this.activeEvent != null) {
-                        this.timeData = getTimeRemaining(this.activeEvent.timestamp);
-                    }
+                setCurrentTimestamp: function () {
+                    this.currentTimestamp = Math.floor(new Date().getTime() / 1000);
                 },
                 setActiveEvent: function (event) {
                     this.activeEvent = event;
-                    this.updateClock();
                 },
                 resetActiveEvent: function () {
                     this.setActiveEvent(this.sortedEvents[0]);
@@ -329,8 +337,6 @@
                     $.post("api/", requestData, function(data) {
                         event.date = data.date,
                         event.timestamp = data.timestamp
-
-                        self.updateClock();
                     }, 'json');
 
                     event.editing = false;
@@ -352,19 +358,6 @@
                 }
             }
         });
-
-        function getTimeRemaining(endtime) {
-            var now = Math.floor(new Date().getTime() / 1000);
-            var difference = endtime - now;
-
-            return {
-                'total': difference,
-                'seconds': Math.floor(difference % 60),
-                'minutes': Math.floor((difference / 60) % 60),
-                'hours': Math.floor((difference / (60 * 60)) % 24),
-                'days': Math.floor(difference / (60 * 60 * 24))
-            };
-        }
     </script>
 </body>
 </html>
