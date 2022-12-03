@@ -250,9 +250,9 @@
 
                     return {
                         'total': difference,
-                        'seconds': Math.floor(difference % 60),
-                        'minutes': Math.floor((difference / 60) % 60),
-                        'hours': Math.floor((difference / (60 * 60)) % 24),
+                        'seconds': Math.floor(difference) % 60,
+                        'minutes': Math.floor(difference / 60) % 60,
+                        'hours': Math.floor(difference / (60 * 60)) % 24,
                         'days': Math.floor(difference / (60 * 60 * 24))
                     };
                 }
